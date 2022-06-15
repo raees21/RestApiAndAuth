@@ -1,0 +1,121 @@
+Index: Models/Order.cs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>using System.ComponentModel.DataAnnotations;\r\nusing RestAPI.Common.Enums;\r\nusing RestAPI.Services;\r\nusing Swashbuckle.AspNetCore.Annotations;\r\n\r\nnamespace RestAPI.Models;\r\n\r\npublic class Order\r\n{\r\n    [Required]\r\n    public Guid Id { get; set; }\r\n    [Required]\r\n    public Guid UserProfileId { get; set; }\r\n    [Required]\r\n    public OrderType OrderType { get; set; }\r\n    public Address? Address { get; set; }\r\n    public ICollection<OrderStatusUpdate> StatusUpdates { get; set; }\r\n    public Order() {}\r\n\r\n    public Order(OrderCreate order, Guid userProfileId, OrderStatus orderStatus, OrderType orderType, Address address)\r\n    {\r\n        Id = Id == Guid.Empty ? new Guid() : Id;\r\n        UserProfileId = userProfileId;\r\n        OrderType = orderType;\r\n        Address = address;\r\n        StatusUpdates = new List<OrderStatusUpdate>()\r\n        {\r\n            new(Id, orderStatus, userProfileId)\r\n        };\r\n    }\r\n}\r\n\r\npublic class OrderCreate\r\n{\r\n    [Required]\r\n    public EOrderType Type { get; set; }\r\n    public Guid AddressId { get; set; }\r\n    [Required]\r\n    [MinLength(1)]\r\n    public IEnumerable<Guid> ItemIds { get; set; }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Models/Order.cs b/Models/Order.cs
+--- a/Models/Order.cs	(revision c072a8366b8b1fb45224361c5f5c21cfab2b464d)
++++ b/Models/Order.cs	(date 1650363644511)
+@@ -10,22 +10,22 @@
+     [Required]
+     public Guid Id { get; set; }
+     [Required]
+-    public Guid UserProfileId { get; set; }
++    public UserProfile UserProfile { get; set; }
+     [Required]
+     public OrderType OrderType { get; set; }
+     public Address? Address { get; set; }
+     public ICollection<OrderStatusUpdate> StatusUpdates { get; set; }
+     public Order() {}
+ 
+-    public Order(OrderCreate order, Guid userProfileId, OrderStatus orderStatus, OrderType orderType, Address address)
++    public Order(OrderCreate order, UserProfile userProfile, OrderStatus orderStatus, OrderType orderType, Address? address)
+     {
+         Id = Id == Guid.Empty ? new Guid() : Id;
+-        UserProfileId = userProfileId;
++        UserProfile = userProfile;
+         OrderType = orderType;
+         Address = address;
+         StatusUpdates = new List<OrderStatusUpdate>()
+         {
+-            new(Id, orderStatus, userProfileId)
++            new(Id, orderStatus, userProfile.Id)
+         };
+     }
+ }
+Index: Services/OrderService.cs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>using System.Net;\r\nusing System.Security.Claims;\r\nusing Microsoft.EntityFrameworkCore;\r\nusing RestAPI.Common.Enums;\r\nusing RestAPI.DataAccess;\r\nusing RestAPI.Models;\r\n\r\nnamespace RestAPI.Services;\r\n\r\npublic class OrderService: IOrderService\r\n{\r\n    private readonly ILogger<OrderService> _logger;\r\n    private readonly DataContext _dataContext;\r\n    public OrderService(ILogger<OrderService> logger, DataContext dataContext)\r\n    {\r\n        _logger = logger;\r\n        _dataContext = dataContext;\r\n    }\r\n    \r\n    public async Task CreateOrder(OrderCreate newOrder, Guid userId)\r\n    {\r\n        _logger.LogInformation($\"New order request for user #{userId}\");\r\n\r\n        OrderType orderType = FetchOrderType(newOrder.Type);\r\n        \r\n        Address address = orderType.Type == EOrderType.Delivery ? FetchAddress(newOrder.AddressId) : null;\r\n\r\n        if (orderType.Type == EOrderType.Delivery && address is null)\r\n        {\r\n            throw new HttpStatusException(HttpStatusCode.NotFound, \"Address could not be found\");\r\n        }\r\n\r\n        OrderStatus orderStatus = FetchOrderStatus(EOrderStatus.Pending);\r\n        \r\n        Order order = new Order(newOrder, userId, orderStatus, orderType, address);\r\n        \r\n        var createdOrder = await _dataContext.Order.AddAsync(order);\r\n        \r\n        await _dataContext.SaveChangesAsync();\r\n        \r\n        _logger.LogInformation($\"Order #{createdOrder.Entity.Id} created for user #{createdOrder.Entity.UserProfileId}\");\r\n    }\r\n\r\n    private OrderStatus FetchOrderStatus(EOrderStatus status)\r\n    {\r\n        OrderStatus orderStatus = _dataContext.OrderStatus.Where(orderStatus => orderStatus.Status == status).FirstOrDefault();\r\n\r\n        if (orderStatus is null)\r\n        {\r\n            throw new HttpStatusException(HttpStatusCode.NotFound, \"Invalid order status\");\r\n        }\r\n\r\n        return orderStatus;\r\n    }\r\n    \r\n    private Address FetchAddress(Guid addressId)\r\n    {\r\n        Address address = _dataContext.Address.Where(address => address.Id == addressId).FirstOrDefault();\r\n\r\n        if (address is null)\r\n        {\r\n            throw new HttpStatusException(HttpStatusCode.NotFound, \"Address not found\");\r\n        }\r\n\r\n        return address;\r\n    }\r\n    \r\n    private OrderType FetchOrderType(EOrderType type)\r\n    {\r\n        OrderType orderType = _dataContext.OrderType.Where(orderType => orderType.Type == type).FirstOrDefault();\r\n\r\n        if (orderType is null)\r\n        {\r\n            throw new HttpStatusException(HttpStatusCode.NotFound, \"Invalid order tpye\");\r\n        }\r\n\r\n        return orderType;\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Services/OrderService.cs b/Services/OrderService.cs
+--- a/Services/OrderService.cs	(revision c072a8366b8b1fb45224361c5f5c21cfab2b464d)
++++ b/Services/OrderService.cs	(date 1650363794938)
+@@ -1,6 +1,4 @@
+ using System.Net;
+-using System.Security.Claims;
+-using Microsoft.EntityFrameworkCore;
+ using RestAPI.Common.Enums;
+ using RestAPI.DataAccess;
+ using RestAPI.Models;
+@@ -22,28 +20,28 @@
+         _logger.LogInformation($"New order request for user #{userId}");
+ 
+         OrderType orderType = FetchOrderType(newOrder.Type);
+-        
+-        Address address = orderType.Type == EOrderType.Delivery ? FetchAddress(newOrder.AddressId) : null;
++        Address? address = orderType.Type == EOrderType.Delivery ? FetchAddress(newOrder.AddressId) : null;
+ 
+         if (orderType.Type == EOrderType.Delivery && address is null)
+         {
+-            throw new HttpStatusException(HttpStatusCode.NotFound, "Address could not be found");
++            throw new HttpStatusException(HttpStatusCode.NotFound, "Address is required");
+         }
+ 
+         OrderStatus orderStatus = FetchOrderStatus(EOrderStatus.Pending);
++        UserProfile userProfile = FetchUserProfile(userId);
+         
+-        Order order = new Order(newOrder, userId, orderStatus, orderType, address);
++        Order order = new Order(newOrder, userProfile, orderStatus, orderType, address);
+         
+         var createdOrder = await _dataContext.Order.AddAsync(order);
+         
+         await _dataContext.SaveChangesAsync();
+         
+-        _logger.LogInformation($"Order #{createdOrder.Entity.Id} created for user #{createdOrder.Entity.UserProfileId}");
++        _logger.LogInformation($"Order #{createdOrder.Entity.Id} created for user #{createdOrder.Entity.UserProfile.Id}");
+     }
+ 
+     private OrderStatus FetchOrderStatus(EOrderStatus status)
+     {
+-        OrderStatus orderStatus = _dataContext.OrderStatus.Where(orderStatus => orderStatus.Status == status).FirstOrDefault();
++        OrderStatus? orderStatus = _dataContext.OrderStatus.FirstOrDefault(orderStatus => orderStatus.Status == status);
+ 
+         if (orderStatus is null)
+         {
+@@ -55,7 +53,7 @@
+     
+     private Address FetchAddress(Guid addressId)
+     {
+-        Address address = _dataContext.Address.Where(address => address.Id == addressId).FirstOrDefault();
++        Address? address = _dataContext.Address.FirstOrDefault(address => address.Id == addressId);
+ 
+         if (address is null)
+         {
+@@ -65,9 +63,21 @@
+         return address;
+     }
+     
++    private UserProfile FetchUserProfile(Guid userId)
++    {
++        UserProfile? userProfile = _dataContext.UserProfile.FirstOrDefault(userProfile => userProfile.Id == userId);
++
++        if (userProfile is null)
++        {
++            throw new HttpStatusException(HttpStatusCode.NotFound, "User profile not found");
++        }
++
++        return userProfile;
++    }
++    
+     private OrderType FetchOrderType(EOrderType type)
+     {
+-        OrderType orderType = _dataContext.OrderType.Where(orderType => orderType.Type == type).FirstOrDefault();
++        OrderType? orderType = _dataContext.OrderType.FirstOrDefault(orderType => orderType.Type == type);
+ 
+         if (orderType is null)
+         {

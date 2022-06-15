@@ -1,0 +1,20 @@
+Index: obj/Debug/net6.0/RestAPI.GeneratedMSBuildEditorConfig.editorconfig
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>is_global = true\r\nbuild_property.TargetFramework = net6.0\r\nbuild_property.TargetPlatformMinVersion = \r\nbuild_property.UsingMicrosoftNETSdkWeb = true\r\nbuild_property.ProjectTypeGuids = \r\nbuild_property.InvariantGlobalization = \r\nbuild_property.PlatformNeutralAssembly = \r\nbuild_property._SupportedPlatformList = Linux,macOS,Windows\r\nbuild_property.RootNamespace = RestAPI\r\nbuild_property.RootNamespace = RestAPI\r\nbuild_property.ProjectDir = C:\\Users\\bbdnet2387\\Desktop\\Grad2022\\c-sharp-level-up\\RestAPI\\\r\nbuild_property.RazorLangVersion = 6.0\r\nbuild_property.SupportLocalizedComponentNames = \r\nbuild_property.GenerateRazorMetadataSourceChecksumAttributes = \r\nbuild_property.MSBuildProjectDirectory = C:\\Users\\bbdnet2387\\Desktop\\Grad2022\\c-sharp-level-up\\RestAPI\r\nbuild_property._RazorSourceGeneratorDebug = \r\n
+===================================================================
+diff --git a/obj/Debug/net6.0/RestAPI.GeneratedMSBuildEditorConfig.editorconfig b/obj/Debug/net6.0/RestAPI.GeneratedMSBuildEditorConfig.editorconfig
+--- a/obj/Debug/net6.0/RestAPI.GeneratedMSBuildEditorConfig.editorconfig	
++++ b/obj/Debug/net6.0/RestAPI.GeneratedMSBuildEditorConfig.editorconfig	
+@@ -8,9 +8,9 @@
+ build_property._SupportedPlatformList = Linux,macOS,Windows
+ build_property.RootNamespace = RestAPI
+ build_property.RootNamespace = RestAPI
+-build_property.ProjectDir = C:\Users\bbdnet2387\Desktop\Grad2022\c-sharp-level-up\RestAPI\
++build_property.ProjectDir = C:\Users\bbdnet1834\RiderProjects\c-sharp-level-up\RestAPI\
+ build_property.RazorLangVersion = 6.0
+ build_property.SupportLocalizedComponentNames = 
+ build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+-build_property.MSBuildProjectDirectory = C:\Users\bbdnet2387\Desktop\Grad2022\c-sharp-level-up\RestAPI
++build_property.MSBuildProjectDirectory = C:\Users\bbdnet1834\RiderProjects\c-sharp-level-up\RestAPI
+ build_property._RazorSourceGeneratorDebug = 
